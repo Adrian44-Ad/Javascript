@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> API Query </title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            background-color: rgb(46, 46, 211);
+            color: aliceblue;
+            box-shadow: 0 10px rgb(9, 0, 43);
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: rgb(0, 52, 111);
+        }
+
+        #character {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        li {
+            list-style: none;
+            border: 2px solid rgb(243, 233, 255);
+            border-radius: 10px;
+            padding: 30px;
+            color: aliceblue;
+            background-color: rgb(9, 9, 81);
+        }
+
+        button {
+            background-color: rgb(0, 0, 141);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1> Rick & Morty's API </h1>
+    </header>
+    <main>
+        <!-- CHARACTER LIST -->
+        <ul id="character">
+
+        </ul>
+    
+        <button id="loadMore" data-next="" data-prev="" onclick="loadMore()"> NEXT </button>
+        <button id="loadLess" data-next="" data-prev="" onclick="loadMore()"> PREV </button>
+    </main>
+    <!-- SCRIPT -->
+    <script src="main.js"></script>
+</body>
+</html>
