@@ -1,71 +1,114 @@
+const state = {
+    currentUrl: "https://rickandmortyapi.com/api/character",
+    next: null,
+    prev: null,
+    characters: [],
+    filtered: [],
+    loading: false,
+    filter: "all" // ← persistencia del filtro
+};
 
-// URL endpoint
-const url_api = "https://rickandmortyapi.com/api/character";
+// -------------------------------
+// REQUEST
+// -------------------------------
+async function requestData(url) {
+    if (state.loading) return;
 
-/**
-requestData
-Send request to Endpoint
-@param {string} url_api
-**/
+    state.loading = true;
 
-async function requestData(url_api) {
-    const response = await fetch(url_api);
-    let data = await response.json();
-    getElementButton(document, 'set', data.info)
-    renderHtml(data);
-}
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
 
-/**
-loadMore
-Call @Function getElementButton 
-*/
+        // Estado
+        state.currentUrl = url;
+        state.next = data.info.next;
+        state.prev = data.info.prev;
+        state.characters = data.results;
 
-function loadMore() {
-    getElementButton(document, 'get')
-}
+        // Aplicar filtro actual
+        filterCharacters();
 
-/**
-getElementButton
-@param {object} elementButton
-@param {object} button
-@param {string} operation
-*/
+        updateButtons();
+        syncFilterUI();
 
-function getElementButton(elementButton, operation = 'get', info = null)
-{
-    const button = elementButton.getElementById("loadMore");
-
-    if(operation == 'get'){
-        const next = button.getAttribute("data-next");
-        if(next == "" || next == null){
-            console.log("No hay url");
-        } else {
-            requestData(next);
-        }
-    } else {
-        button.setAttribute("data-next", (info.next == null) ? '' : info.next);
-        button.setAttribute("data-prev", (info.prev == null) ? '' :info.prev);
+    } catch (error) {
+        console.error(error);
+    } finally {
+        state.loading = false;
     }
 }
 
-/**
-renderHtml
-@param {object} element
-@param {object} data
-*/
+// -------------------------------
+// RENDER
+// -------------------------------
+function renderHtml(characters) {
+    const element = document.getElementById("character");
 
-function renderHtml(data){
-    let element = document.getElementById("character");
-    let resultCount = data.results.length;
-    for (let index = 0; index < resultCount; index++) {
-    let character = data.results[index];
-    element.innerHTML += `
+    element.innerHTML = characters.map(character => `
         <li>
             <img src="${character.image}" alt="${character.name}">
             <h2>${character.name}</h2>
             <span>${character.gender}</span>
-        </li>`;
- }
+        </li>
+    `).join('');
 }
 
-const response = requestData(url_api);
+// -------------------------------
+// BOTONES
+// -------------------------------
+function updateButtons() {
+    const nextBtn = document.getElementById("loadMore");
+    const prevBtn = document.getElementById("loadLess");
+
+    nextBtn.disabled = !state.next;
+    prevBtn.disabled = !state.prev;
+}
+
+// -------------------------------
+// PAGINACIÓN
+// -------------------------------
+function loadMore() {
+    if (state.next) requestData(state.next);
+}
+
+function loadPrev() {
+    if (state.prev) requestData(state.prev);
+}
+
+// -------------------------------
+// FILTRO (controlador)
+// -------------------------------
+function applyFilter() {
+    const value = document.getElementById("genderFilter").value;
+    state.filter = value;
+
+    filterCharacters();
+}
+
+// -------------------------------
+// FILTRO (lógica)
+// -------------------------------
+function filterCharacters() {
+    if (state.filter === "all") {
+        state.filtered = [...state.characters];
+    } else {
+        state.filtered = state.characters.filter(
+            c => c.gender.toLowerCase() === state.filter.toLowerCase()
+        );
+    }
+
+    renderHtml(state.filtered);
+}
+
+// -------------------------------
+// SINCRONIZAR UI
+// -------------------------------
+function syncFilterUI() {
+    document.getElementById("genderFilter").value = state.filter;
+}
+
+// -------------------------------
+// INIT
+// -------------------------------
+requestData(state.currentUrl);
